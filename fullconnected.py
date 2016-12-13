@@ -53,7 +53,7 @@ with graph.as_default():
   biases = tf.Variable(tf.zeros([num_labels]))
   
   # Training computation.
-  logits = tf.matmul(tf_train_dataset, weights) + biases
+  logits = tf.nn.relu(tf.matmul(tf_train_dataset, weights) + biases)
   loss = tf.reduce_mean(
     tf.nn.softmax_cross_entropy_with_logits(logits, tf_train_labels))
   
@@ -63,17 +63,17 @@ with graph.as_default():
   # Predictions for the training, validation, and test data.
   train_prediction = tf.nn.softmax(logits)
   valid_prediction = tf.nn.softmax(
-    tf.matmul(tf_valid_dataset, weights) + biases)
-  test_prediction = tf.nn.softmax(tf.matmul(tf_test_dataset, weights) + biases)
+    tf.nn.relu(tf.matmul(tf_valid_dataset, weights) + biases))
+  test_prediction = tf.nn.softmax(tf.nn.relu(tf.matmul(tf_test_dataset, weights) + biases))
 
 
-num_steps = 3001
+num_steps = 100001
 def accuracy(predictions, labels):
   return (100.0 * np.sum(np.argmax(predictions, 1) == np.argmax(labels, 1))
           / predictions.shape[0])
 
 with tf.Session(graph=graph) as session:
-  tf.global_variables_initializer().run()
+  tf.initialize_all_variables().run()
   print("Initialized")
   for step in range(num_steps):
     # Pick an offset within the training data, which has been randomized.
@@ -88,7 +88,7 @@ with tf.Session(graph=graph) as session:
     feed_dict = {tf_train_dataset : batch_data, tf_train_labels : batch_labels}
     _, l, predictions = session.run(
       [optimizer, loss, train_prediction], feed_dict=feed_dict)
-    if (step % 500 == 0):
+    if (step % 5000 == 0):
       print("Minibatch loss at step %d: %f" % (step, l))
       print("Minibatch accuracy: %.1f%%" % accuracy(predictions, batch_labels))
       print("Validation accuracy: %.1f%%" % accuracy(

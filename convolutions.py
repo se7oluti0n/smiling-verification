@@ -33,6 +33,7 @@ def reformat(dataset, labels):
     (-1, image_size, image_size, num_channels)).astype(np.float32)
   labels = (np.arange(num_labels) == labels[:,None]).astype(np.float32)
   return dataset, labels
+
 train_dataset, train_labels = reformat(train_dataset, train_labels)
 valid_dataset, valid_labels = reformat(valid_dataset, valid_labels)
 test_dataset, test_labels = reformat(test_dataset, test_labels)
@@ -50,7 +51,6 @@ depth = 16
 num_hidden = 64
 
 graph = tf.Graph()
-
 with graph.as_default():
 
   # Input data.
@@ -98,7 +98,7 @@ with graph.as_default():
   valid_prediction = tf.nn.softmax(model(tf_valid_dataset))
   test_prediction = tf.nn.softmax(model(tf_test_dataset))
 
-num_steps = 1001
+num_steps = 10001
 
 with tf.Session(graph=graph) as session:
   tf.initialize_all_variables().run()
@@ -110,7 +110,7 @@ with tf.Session(graph=graph) as session:
     feed_dict = {tf_train_dataset : batch_data, tf_train_labels : batch_labels}
     _, l, predictions = session.run(
       [optimizer, loss, train_prediction], feed_dict=feed_dict)
-    if (step % 50 == 0):
+    if (step % 1000 == 0):
       print('Minibatch loss at step %d: %f' % (step, l))
       print('Minibatch accuracy: %.1f%%' % accuracy(predictions, batch_labels))
       print('Validation accuracy: %.1f%%' % accuracy(
